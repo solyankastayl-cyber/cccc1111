@@ -1,20 +1,15 @@
 /**
- * MARKET PHASE ENGINE
+ * MARKET PHASE ENGINE — Compact Horizontal Layout
  * 
- * Объединённый блок:
- * - Section 1: Historical Phase Performance (упрощённая таблица фаз)
- * - Section 2: Current Forecast Weighting (упрощённая таблица горизонтов)
- * 
- * Без технического мусора:
- * - Без Sharpe, Score, Samples, Grade A/B/C/F, Filter кнопок
- * - Без Tactical/Structure, Conf, Div, Matches, стрелок
+ * Один компактный блок:
+ * | Phase Performance (55%) | Forecast Weighting (45%) |
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL || '';
 
-// Phase colors (matching chart)
+// Phase colors
 const PHASE_COLORS = {
   ACCUMULATION: '#22c55e',
   MARKUP: '#3b82f6',
@@ -24,201 +19,141 @@ const PHASE_COLORS = {
   CAPITULATION: '#ef4444',
 };
 
-// Risk levels based on historical data
-const getRiskLevel = (avgRet, hitRate) => {
-  if (hitRate > 0.55 && avgRet > 0.02) return { label: 'Low', color: '#16a34a', bg: '#dcfce7' };
-  if (hitRate > 0.45 && avgRet > 0) return { label: 'Medium', color: '#d97706', bg: '#fef3c7' };
-  return { label: 'High', color: '#dc2626', bg: '#fee2e2' };
+// Short phase names
+const PHASE_SHORT = {
+  ACCUMULATION: 'Accum',
+  MARKUP: 'Markup',
+  DISTRIBUTION: 'Distrib',
+  MARKDOWN: 'Markdown',
+  RECOVERY: 'Recovery',
+  CAPITULATION: 'Capitul',
+};
+
+// Risk level
+const getRisk = (avgRet, hitRate) => {
+  if (hitRate > 0.55 && avgRet > 0.02) return { label: 'Low', color: '#16a34a' };
+  if (hitRate > 0.45 && avgRet > 0) return { label: 'Med', color: '#d97706' };
+  return { label: 'High', color: '#dc2626' };
 };
 
 /**
- * Section 1: Historical Phase Performance
+ * Phase Performance Column (Left 55%)
  */
-function PhasePerformanceSection({ phases, loading, error }) {
+function PhaseColumn({ phases, loading, error }) {
   if (loading) {
-    return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.loadingText}>Loading phase data...</div>
-      </div>
-    );
+    return <div style={styles.loading}>Loading...</div>;
   }
-
   if (error) {
-    return (
-      <div style={styles.errorContainer}>
-        <div style={styles.errorText}>{error}</div>
-      </div>
-    );
+    return <div style={styles.error}>{error}</div>;
   }
-
-  if (!phases || phases.length === 0) {
-    return (
-      <div style={styles.emptyContainer}>
-        <div style={styles.emptyText}>No phase data available</div>
-      </div>
-    );
+  if (!phases?.length) {
+    return <div style={styles.empty}>No data</div>;
   }
 
   return (
-    <div style={styles.section}>
-      <div style={styles.sectionHeader}>
-        <span style={styles.sectionTitle}>Historical Phase Performance</span>
-      </div>
-      
-      {/* Table Header */}
-      <div style={styles.tableHeader}>
-        <span style={styles.colPhase}>Phase</span>
-        <span style={styles.colSuccess}>Historical Success</span>
-        <span style={styles.colReturn}>Avg Return</span>
-        <span style={styles.colRisk}>Risk</span>
-      </div>
-      
-      {/* Table Rows */}
-      {phases.map((phase) => {
-        const risk = getRiskLevel(phase.avgRet, phase.hitRate);
-        const phaseColor = PHASE_COLORS[phase.phaseName] || '#6b7280';
-        
-        return (
-          <div 
-            key={phase.phaseId || phase.phaseName} 
-            style={styles.tableRow}
-            data-testid={`phase-engine-row-${phase.phaseName?.toLowerCase()}`}
-          >
-            {/* Phase Name */}
-            <span style={styles.colPhase}>
-              <span style={{
-                ...styles.phaseBadge,
-                backgroundColor: phaseColor,
-              }}>
-                {phase.phaseName}
+    <div style={styles.phaseColumn}>
+      <div style={styles.columnHeader}>Phase Performance</div>
+      <div style={styles.phaseTable}>
+        {/* Header */}
+        <div style={styles.phaseHeaderRow}>
+          <span style={styles.phaseColName}>Phase</span>
+          <span style={styles.phaseColStat}>Success</span>
+          <span style={styles.phaseColStat}>Return</span>
+          <span style={styles.phaseColRisk}>Risk</span>
+        </div>
+        {/* Rows */}
+        {phases.map((p) => {
+          const risk = getRisk(p.avgRet, p.hitRate);
+          const phaseColor = PHASE_COLORS[p.phaseName] || '#6b7280';
+          const shortName = PHASE_SHORT[p.phaseName] || p.phaseName;
+          
+          return (
+            <div key={p.phaseId || p.phaseName} style={styles.phaseRow}>
+              <span style={styles.phaseColName}>
+                <span style={{ ...styles.phaseBadge, backgroundColor: phaseColor }}>
+                  {shortName}
+                </span>
               </span>
-            </span>
-            
-            {/* Historical Success */}
-            <span style={styles.colSuccess}>
               <span style={{
-                ...styles.successValue,
-                color: phase.hitRate > 0.5 ? '#16a34a' : '#dc2626',
+                ...styles.phaseColStat,
+                color: p.hitRate > 0.5 ? '#16a34a' : '#dc2626',
               }}>
-                {(phase.hitRate * 100).toFixed(0)}%
+                {(p.hitRate * 100).toFixed(0)}%
               </span>
-            </span>
-            
-            {/* Avg Return */}
-            <span style={styles.colReturn}>
               <span style={{
-                ...styles.returnValue,
-                color: phase.avgRet >= 0 ? '#16a34a' : '#dc2626',
+                ...styles.phaseColStat,
+                color: p.avgRet >= 0 ? '#16a34a' : '#dc2626',
               }}>
-                {phase.avgRet >= 0 ? '+' : ''}{(phase.avgRet * 100).toFixed(1)}%
+                {p.avgRet >= 0 ? '+' : ''}{(p.avgRet * 100).toFixed(1)}%
               </span>
-            </span>
-            
-            {/* Risk */}
-            <span style={styles.colRisk}>
-              <span style={{
-                ...styles.riskBadge,
-                backgroundColor: risk.bg,
-                color: risk.color,
-              }}>
+              <span style={{ ...styles.phaseColRisk, color: risk.color }}>
                 {risk.label}
               </span>
-            </span>
-          </div>
-        );
-      })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 /**
- * Section 2: Current Forecast Weighting
+ * Forecast Weighting Column (Right 45%)
  */
-function ForecastWeightingSection({ horizonStack }) {
-  if (!horizonStack || horizonStack.length === 0) {
-    return null;
-  }
+function WeightColumn({ horizonStack }) {
+  if (!horizonStack?.length) return null;
 
-  // Sort by weight descending
-  const sortedHorizons = [...horizonStack].sort((a, b) => (b.voteWeight || 0) - (a.voteWeight || 0));
+  // Sort by weight desc
+  const sorted = [...horizonStack].sort((a, b) => (b.voteWeight || 0) - (a.voteWeight || 0));
 
   return (
-    <div style={styles.section}>
-      <div style={styles.sectionHeader}>
-        <span style={styles.sectionTitle}>Current Forecast Weighting</span>
-      </div>
-      
-      {/* Table Header */}
-      <div style={styles.weightTableHeader}>
-        <span style={styles.colHorizon}>Horizon</span>
-        <span style={styles.colInfluence}>Influence on Forecast</span>
-      </div>
-      
-      {/* Table Rows */}
-      {sortedHorizons.map((item) => {
-        const weight = (item.voteWeight || 0) * 100;
-        const barColor = weight > 30 ? '#ef4444' : weight > 15 ? '#8b5cf6' : '#3b82f6';
-        
-        return (
-          <div 
-            key={item.horizon} 
-            style={styles.weightRow}
-            data-testid={`weight-row-${item.horizon}`}
-          >
-            {/* Horizon Badge */}
-            <span style={styles.colHorizon}>
-              <span style={styles.horizonBadge}>
-                {item.horizon?.toUpperCase()}
-              </span>
-            </span>
-            
-            {/* Influence */}
-            <span style={styles.colInfluence}>
-              <div style={styles.weightBarWrapper}>
-                <div style={styles.weightBarBg}>
-                  <div style={{
-                    ...styles.weightBar,
-                    width: `${Math.min(100, weight * 2.5)}%`,
-                    backgroundColor: barColor,
-                  }} />
-                </div>
-                <span style={styles.weightText}>{weight.toFixed(0)}%</span>
+    <div style={styles.weightColumn}>
+      <div style={styles.columnHeader}>Forecast Weighting</div>
+      <div style={styles.weightTable}>
+        {sorted.map((item) => {
+          const weight = (item.voteWeight || 0) * 100;
+          const barColor = weight > 30 ? '#ef4444' : weight > 15 ? '#8b5cf6' : '#3b82f6';
+          
+          return (
+            <div key={item.horizon} style={styles.weightRow}>
+              <span style={styles.horizonLabel}>{item.horizon?.toUpperCase()}</span>
+              <div style={styles.miniBarContainer}>
+                <div style={{
+                  ...styles.miniBar,
+                  width: `${Math.min(100, weight * 2.5)}%`,
+                  backgroundColor: barColor,
+                }} />
               </div>
-            </span>
-          </div>
-        );
-      })}
+              <span style={styles.weightPercent}>{weight.toFixed(0)}%</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 /**
- * Main Market Phase Engine Component
+ * Main Component
  */
-export function MarketPhaseEngine({ tier = 'TACTICAL', horizonStack, currentFocus }) {
-  const [phaseData, setPhaseData] = useState(null);
+export function MarketPhaseEngine({ tier = 'TACTICAL', horizonStack }) {
+  const [phases, setPhases] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  const fetchPhaseData = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(`${API_BASE}/api/fractal/v2.1/admin/phase-performance?symbol=BTC&tier=${tier}`);
-      
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-      
-      const result = await res.json();
-      
-      if (result.ok) {
-        setPhaseData(result.phases || []);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.ok) {
+        setPhases(data.phases || []);
         setError(null);
       } else {
-        throw new Error(result.error || 'Failed to fetch');
+        throw new Error(data.error || 'Failed');
       }
     } catch (err) {
-      console.error('[MarketPhaseEngine] Error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -226,219 +161,173 @@ export function MarketPhaseEngine({ tier = 'TACTICAL', horizonStack, currentFocu
   }, [tier]);
   
   useEffect(() => {
-    fetchPhaseData();
-  }, [fetchPhaseData]);
+    fetchData();
+  }, [fetchData]);
 
   return (
     <div style={styles.container} data-testid="market-phase-engine">
-      {/* Header */}
       <div style={styles.header}>
         <span style={styles.title}>Market Phase Engine</span>
       </div>
-      
-      {/* Section 1: Phase Performance */}
-      <PhasePerformanceSection 
-        phases={phaseData} 
-        loading={loading} 
-        error={error} 
-      />
-      
-      {/* Divider */}
-      <div style={styles.divider} />
-      
-      {/* Section 2: Forecast Weighting */}
-      <ForecastWeightingSection horizonStack={horizonStack} />
+      <div style={styles.content}>
+        <PhaseColumn phases={phases} loading={loading} error={error} />
+        <div style={styles.divider} />
+        <WeightColumn horizonStack={horizonStack} />
+      </div>
     </div>
   );
 }
 
 const styles = {
   container: {
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
+    backgroundColor: '#fff',
+    borderRadius: '8px',
     border: '1px solid #e5e7eb',
     overflow: 'hidden',
   },
   header: {
-    padding: '16px 20px',
+    padding: '10px 16px',
     borderBottom: '1px solid #e5e7eb',
     backgroundColor: '#f9fafb',
   },
   title: {
-    fontSize: '15px',
+    fontSize: '13px',
     fontWeight: '600',
     color: '#1f2937',
   },
-  section: {
-    padding: '16px 20px',
-  },
-  sectionHeader: {
-    marginBottom: '12px',
-  },
-  sectionTitle: {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#6b7280',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  divider: {
-    height: '1px',
-    backgroundColor: '#e5e7eb',
-    margin: '0 20px',
+  content: {
+    display: 'flex',
+    flexDirection: 'row',
+    padding: '12px 16px',
+    gap: '0',
   },
   
-  // Phase Performance Table
-  tableHeader: {
+  // Phase Column (55%)
+  phaseColumn: {
+    flex: '0 0 55%',
+    paddingRight: '16px',
+  },
+  columnHeader: {
+    fontSize: '10px',
+    fontWeight: '600',
+    color: '#9ca3af',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    marginBottom: '8px',
+  },
+  phaseTable: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0',
+  },
+  phaseHeaderRow: {
     display: 'grid',
-    gridTemplateColumns: '140px 140px 100px 80px',
-    gap: '12px',
-    padding: '8px 0',
+    gridTemplateColumns: '80px 55px 55px 40px',
+    gap: '4px',
+    paddingBottom: '4px',
     borderBottom: '1px solid #f3f4f6',
-    fontSize: '11px',
+    fontSize: '9px',
     fontWeight: '600',
     color: '#9ca3af',
     textTransform: 'uppercase',
   },
-  tableRow: {
+  phaseRow: {
     display: 'grid',
-    gridTemplateColumns: '140px 140px 100px 80px',
-    gap: '12px',
-    padding: '10px 0',
-    borderBottom: '1px solid #f3f4f6',
+    gridTemplateColumns: '80px 55px 55px 40px',
+    gap: '4px',
+    padding: '5px 0',
+    borderBottom: '1px solid #f9fafb',
     alignItems: 'center',
   },
-  colPhase: {
+  phaseColName: {
     display: 'flex',
     alignItems: 'center',
   },
-  colSuccess: {
+  phaseColStat: {
+    fontSize: '11px',
+    fontWeight: '600',
+    fontFamily: 'ui-monospace, monospace',
     textAlign: 'center',
   },
-  colReturn: {
-    textAlign: 'center',
-  },
-  colRisk: {
+  phaseColRisk: {
+    fontSize: '10px',
+    fontWeight: '600',
     textAlign: 'center',
   },
   phaseBadge: {
     color: '#fff',
-    padding: '4px 12px',
-    borderRadius: '4px',
-    fontSize: '11px',
+    padding: '2px 6px',
+    borderRadius: '3px',
+    fontSize: '9px',
     fontWeight: '700',
-    letterSpacing: '0.3px',
-    textTransform: 'uppercase',
-  },
-  successValue: {
-    fontSize: '14px',
-    fontWeight: '600',
-    fontFamily: 'ui-monospace, monospace',
-  },
-  returnValue: {
-    fontSize: '14px',
-    fontWeight: '600',
-    fontFamily: 'ui-monospace, monospace',
-  },
-  riskBadge: {
-    padding: '3px 10px',
-    borderRadius: '4px',
-    fontSize: '11px',
-    fontWeight: '600',
+    letterSpacing: '0.2px',
   },
   
-  // Forecast Weighting Table
-  weightTableHeader: {
-    display: 'grid',
-    gridTemplateColumns: '100px 1fr',
-    gap: '16px',
-    padding: '8px 0',
-    borderBottom: '1px solid #f3f4f6',
-    fontSize: '11px',
-    fontWeight: '600',
-    color: '#9ca3af',
-    textTransform: 'uppercase',
+  // Divider
+  divider: {
+    width: '1px',
+    backgroundColor: '#e5e7eb',
+    margin: '0 16px',
+  },
+  
+  // Weight Column (45%)
+  weightColumn: {
+    flex: '0 0 calc(45% - 33px)',
+  },
+  weightTable: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
   },
   weightRow: {
-    display: 'grid',
-    gridTemplateColumns: '100px 1fr',
-    gap: '16px',
-    padding: '10px 0',
-    borderBottom: '1px solid #f3f4f6',
-    alignItems: 'center',
-  },
-  colHorizon: {
     display: 'flex',
     alignItems: 'center',
+    gap: '8px',
+    padding: '3px 0',
   },
-  colInfluence: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  horizonBadge: {
-    backgroundColor: '#f3f4f6',
-    color: '#374151',
-    padding: '4px 12px',
-    borderRadius: '4px',
-    fontSize: '12px',
+  horizonLabel: {
+    fontSize: '10px',
     fontWeight: '700',
+    color: '#374151',
     fontFamily: 'ui-monospace, monospace',
+    minWidth: '32px',
   },
-  weightBarWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
+  miniBarContainer: {
     flex: 1,
-  },
-  weightBarBg: {
-    flex: 1,
-    height: '8px',
+    height: '6px',
     backgroundColor: '#f3f4f6',
-    borderRadius: '4px',
+    borderRadius: '3px',
     overflow: 'hidden',
   },
-  weightBar: {
+  miniBar: {
     height: '100%',
-    borderRadius: '4px',
-    transition: 'width 0.3s',
+    borderRadius: '3px',
+    transition: 'width 0.2s',
   },
-  weightText: {
-    fontSize: '13px',
+  weightPercent: {
+    fontSize: '10px',
     fontWeight: '600',
-    color: '#374151',
+    color: '#6b7280',
     fontFamily: 'ui-monospace, monospace',
-    minWidth: '40px',
+    minWidth: '28px',
     textAlign: 'right',
   },
   
   // States
-  loadingContainer: {
-    padding: '32px',
-    textAlign: 'center',
-    backgroundColor: '#f9fafb',
+  loading: {
+    fontSize: '11px',
+    color: '#9ca3af',
+    padding: '12px 0',
   },
-  loadingText: {
-    color: '#6b7280',
-    fontSize: '13px',
-  },
-  errorContainer: {
-    padding: '24px',
-    textAlign: 'center',
-    backgroundColor: '#fef2f2',
-    margin: '16px 20px',
-    borderRadius: '8px',
-  },
-  errorText: {
+  error: {
+    fontSize: '11px',
     color: '#dc2626',
-    fontSize: '13px',
+    padding: '12px 0',
   },
-  emptyContainer: {
-    padding: '32px',
-    textAlign: 'center',
-  },
-  emptyText: {
-    color: '#6b7280',
-    fontSize: '13px',
+  empty: {
+    fontSize: '11px',
+    color: '#9ca3af',
+    padding: '12px 0',
   },
 };
 
