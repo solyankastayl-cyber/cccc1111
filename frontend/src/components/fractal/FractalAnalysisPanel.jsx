@@ -120,7 +120,7 @@ export function FractalAnalysisPanel({ forecast, overlay, matches, focus }) {
         </div>
         
         <div className="space-y-2 max-h-56 overflow-y-auto">
-          {matchList.slice(0, 10).map((m, i) => {
+          {matchList.map((m, i) => {
             const ret = m.return30d ?? m.return ?? m.aftermath?.ret30d ?? 0;
             const phaseClass = PHASE_CLASSES[m.phase] || 'bg-slate-100 text-slate-600';
             
@@ -130,7 +130,7 @@ export function FractalAnalysisPanel({ forecast, overlay, matches, focus }) {
                 className="flex items-center justify-between p-2 bg-slate-50 rounded hover:bg-slate-100 cursor-pointer transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono text-slate-400">#{i + 1}</span>
+                  <span className="text-xs font-mono text-slate-400 w-5 text-right">{i + 1}</span>
                   <span className="text-sm font-medium text-slate-700">
                     {m.startDate?.slice(0, 10) || m.id}
                   </span>
