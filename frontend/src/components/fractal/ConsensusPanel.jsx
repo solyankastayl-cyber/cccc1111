@@ -1,9 +1,9 @@
 /**
- * INSTITUTIONAL CONSENSUS — Compact Panel
+ * INSTITUTIONAL CONSENSUS — Compact Panel (3-Column Layout)
  * 
  * Clean, compact layout:
  * - Top: Index | Conflict | Resolved | Dominant (one line)
- * - Bottom: Vote by Horizon (left) | Layer Influence (right)
+ * - Bottom: Vote by Horizon | Layer Influence | Forecast Influence
  * 
  * No technical clutter. With tooltips.
  */
@@ -18,6 +18,7 @@ const TOOLTIPS = {
   dominant: 'The layer currently exerting the strongest influence on the forecast.',
   voteHorizon: 'Shows contribution of each time horizon to the overall consensus.',
   layerInfluence: 'Shows how much each analytical layer affects the current forecast.',
+  forecastInfluence: 'Model weighting applied to each horizon in projection calculations.',
 };
 
 const CONFLICT_LABELS = {

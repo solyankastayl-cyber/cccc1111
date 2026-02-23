@@ -466,7 +466,7 @@ const FractalTerminal = () => {
 
         {/* BLOCK 74.2: Institutional Consensus Panel */}
         {consensus74 && (
-          <ConsensusPanel consensus74={consensus74} />
+          <ConsensusPanel consensus74={consensus74} horizonStack={horizonStack} />
         )}
         
         {/* Strategy Panel */}
