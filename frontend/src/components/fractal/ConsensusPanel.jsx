@@ -254,7 +254,7 @@ const styles = {
     borderRadius: '12px',
     border: '1px solid #e5e7eb',
     overflow: 'visible',
-    maxWidth: '900px',
+    width: '100%',
   },
   header: {
     padding: '14px 20px',
