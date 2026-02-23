@@ -238,6 +238,66 @@ class FractalAPITester:
         
         return overlay_results
 
+    def test_phase_performance_api(self) -> Dict:
+        """Test /api/fractal/v2.1/admin/phase-performance specifically for MarketPhaseEngine"""
+        print("\n" + "="*60)
+        print("TESTING PHASE PERFORMANCE API")
+        print("="*60)
+        
+        params = {
+            'symbol': 'BTC',
+            'tier': 'TACTICAL'
+        }
+        
+        success, response = self.run_test(
+            "Phase Performance Data",
+            "GET",
+            "/api/fractal/v2.1/admin/phase-performance",
+            200,
+            params=params
+        )
+        
+        result = {
+            "success": success,
+            "response": response
+        }
+        
+        if success and isinstance(response, dict):
+            # Check for key fields expected by MarketPhaseEngine
+            if 'ok' in response and response.get('ok'):
+                print(f"   ✅ API response OK: {response['ok']}")
+                
+                if 'phases' in response and isinstance(response['phases'], list):
+                    phases = response['phases']
+                    print(f"   📊 Phases found: {len(phases)}")
+                    
+                    # Check phase structure
+                    for i, phase in enumerate(phases[:3]):  # Check first 3 phases
+                        if isinstance(phase, dict):
+                            required_fields = ['phaseName', 'hitRate', 'avgRet']
+                            missing_fields = [field for field in required_fields if field not in phase]
+                            
+                            if not missing_fields:
+                                print(f"   ✅ Phase {i+1} ({phase.get('phaseName', 'Unknown')}): All required fields present")
+                                print(f"       Hit Rate: {(phase.get('hitRate', 0) * 100):.1f}%")
+                                print(f"       Avg Return: {(phase.get('avgRet', 0) * 100):.1f}%")
+                            else:
+                                print(f"   ❌ Phase {i+1}: Missing fields: {missing_fields}")
+                
+                if 'meta' in response:
+                    meta = response['meta']
+                    print(f"   📈 Meta - Symbol: {meta.get('symbol', 'N/A')}, Tier: {meta.get('tier', 'N/A')}")
+                
+                result.update({
+                    "phases_count": len(response.get('phases', [])),
+                    "has_meta": 'meta' in response,
+                    "api_ok": response.get('ok', False)
+                })
+            else:
+                print(f"   ❌ API response not OK: {response.get('error', 'Unknown error')}")
+        
+        return result
+
     def test_terminal_api(self) -> Dict:
         """Test /api/fractal/v2.1/terminal"""
         print("\n" + "="*60)
