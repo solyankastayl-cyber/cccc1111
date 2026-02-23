@@ -441,21 +441,20 @@ const FractalTerminal = () => {
           </div>
         )}
 
-        {/* BLOCK 70.2: Fractal Analysis - Unified Panel */}
-        {!isLoading && focusData && (
-          <div className="mb-6">
-            <FractalAnalysisPanel 
-              forecast={forecast}
-              overlay={overlay}
-              matches={overlay?.matches}
-              focus={focus}
-            />
-          </div>
-        )}
-
-        {/* MARKET PHASE ENGINE - Объединённый блок */}
+        {/* FRACTAL ANALYSIS + MARKET PHASE ENGINE - Горизонтальный ряд */}
         {!isLoading && (
-          <div className="mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Fractal Analysis */}
+            {focusData && (
+              <FractalAnalysisPanel 
+                forecast={forecast}
+                overlay={overlay}
+                matches={overlay?.matches}
+                focus={focus}
+              />
+            )}
+            
+            {/* Market Phase Engine */}
             <MarketPhaseEngine 
               tier={meta?.tier || 'TACTICAL'} 
               horizonStack={horizonStack}
