@@ -1,0 +1,37 @@
+{
+  "summary": "Completed comprehensive backend API testing for Fractal module. All three main APIs (/api/fractal/v2.1/focus-pack, /api/fractal/v2.1/overlay, /api/fractal/v2.1/terminal) are working correctly for all horizons (7d, 14d, 30d, 90d, 180d, 365d). Verified symmetric graph logic with windowLen matching displayWindow parameters.",
+
+  "backend_issues": {
+    "critical_bugs": [],
+    "flaky_endpoints": [],
+    "minor_issues": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Focus-pack API for all 6 horizons (7d, 14d, 30d, 90d, 180d, 365d) - 100% success",
+    "Overlay API symmetric logic - windowLen matches displayWindow correctly",
+    "Overlay API returns proper currentWindow, matches with correct structure",
+    "Terminal API returns complete data with all expected sections (volatility, decisionKernel, horizonStack, consensus74, phaseSnapshot)",
+    "Backend responds quickly (average 100ms response time)",
+    "Forecast data includes path, upperBand, lowerBand, markers as expected",
+    "Matches data includes proper similarity, phase, return calculations",
+    "WindowLen correctly corresponds to horizon displayWindow as requested"
+  ],
+
+  "test_report_links": ["/app/backend_test.py"],
+
+  "action_item_for_main_agent": "",
+
+  "updated_files": ["/app/backend_test.py"],
+
+  "success_percentage": "Backend: 100% (10/10 tests passed)",
+
+  "should_call_test_agent_after_fix": "false",
+  "should_main_agent_test_itself": "true"
+}
