@@ -86,7 +86,7 @@ function Tip({ children, text }) {
 /**
  * Main Component
  */
-export function ConsensusPanel({ consensus74 }) {
+export function ConsensusPanel({ consensus74, horizonStack = [] }) {
   if (!consensus74) return null;
   
   const {
