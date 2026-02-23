@@ -20,6 +20,7 @@ import { ConsensusPanel } from '../components/fractal/ConsensusPanel';
 import { SystemStatusPanel } from '../components/fractal/SystemStatusPanel';
 import { UnifiedControlRow } from '../components/fractal/UnifiedControlRow';
 import { MarketPhaseEngine } from '../components/fractal/MarketPhaseEngine';
+import { FractalAnalysisPanel } from '../components/fractal/FractalAnalysisPanel';
 import { PhaseStrengthBadge } from '../components/fractal/PhaseStrengthBadge';
 import { AsOfDatePicker } from '../components/fractal/AsOfDatePicker';
 import { ScenarioBox } from '../components/fractal/ScenarioBox';
