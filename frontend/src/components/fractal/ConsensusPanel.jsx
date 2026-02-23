@@ -159,7 +159,7 @@ export function ConsensusPanel({ consensus74, horizonStack = [] }) {
         </Tip>
       </div>
       
-      {/* Bottom Section - Two Columns */}
+      {/* Bottom Section - Three Columns */}
       <div style={styles.bottomRow}>
         {/* Vote by Horizon */}
         <div style={styles.column}>
@@ -213,6 +213,34 @@ export function ConsensusPanel({ consensus74, horizonStack = [] }) {
               </div>
               <span style={styles.layerPercent}>{timeWeight.toFixed(0)}%</span>
             </div>
+          </div>
+        </div>
+        
+        {/* Forecast Influence - NEW COLUMN */}
+        <div style={styles.column}>
+          <Tip text={TOOLTIPS.forecastInfluence}>
+            <div style={styles.columnTitle}>Forecast Influence</div>
+          </Tip>
+          <div style={styles.forecastList}>
+            {horizonStack.slice(0, 6).map((h) => {
+              const weight = (h.voteWeight || 0) * 100;
+              const tierColor = h.tier === 'STRUCTURE' ? '#ef4444' 
+                : h.tier === 'TACTICAL' ? '#8b5cf6' 
+                : '#3b82f6';
+              return (
+                <div key={h.horizon} style={styles.forecastItem}>
+                  <span style={styles.forecastLabel}>{h.horizon}</span>
+                  <div style={styles.miniBarBg}>
+                    <div style={{ 
+                      ...styles.miniBar, 
+                      width: `${Math.min(100, weight * 3.5)}%`, 
+                      backgroundColor: tierColor,
+                    }} />
+                  </div>
+                  <span style={styles.forecastPercent}>{weight.toFixed(0)}%</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
