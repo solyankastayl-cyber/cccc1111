@@ -410,6 +410,7 @@ class FractalAPITester:
         focus_pack_results = self.test_focus_pack_api()
         overlay_results = self.test_overlay_api()
         terminal_result = self.test_terminal_api()
+        phase_performance_result = self.test_phase_performance_api()
         
         # Validate naming conventions
         percentile_issues = self.validate_percentile_renaming(focus_pack_results)
