@@ -1,335 +1,220 @@
 /**
- * BLOCK 74.2 + 74.3 — Consensus Panel Component
+ * INSTITUTIONAL CONSENSUS — Compact Panel
  * 
- * Institutional consensus display with:
- * - Consensus Index (0-100)
- * - Conflict Level visualization
- * - BLOCK 74.3: Structural Dominance Lock indicator
- * - Vote breakdown by horizon
- * - Resolved decision (BUY/SELL/HOLD + mode + size)
- * - Adaptive meta information
+ * Clean, compact layout:
+ * - Top: Index | Conflict | Resolved | Dominant (one line)
+ * - Bottom: Vote by Horizon (left) | Layer Influence (right)
+ * 
+ * No technical clutter. With tooltips.
  */
 
 import React, { useState } from 'react';
 
-const CONFLICT_COLORS = {
-  NONE: { bg: '#dcfce7', text: '#166534', label: 'Aligned' },
-  LOW: { bg: '#d1fae5', text: '#047857', label: 'Minor Conflict' },
-  MODERATE: { bg: '#fef3c7', text: '#92400e', label: 'Moderate' },
-  HIGH: { bg: '#fed7aa', text: '#c2410c', label: 'High Conflict' },
-  SEVERE: { bg: '#fecaca', text: '#991b1b', label: 'Severe' },
-  STRUCTURAL_LOCK: { bg: '#e0e7ff', text: '#3730a3', label: 'Structural Lock' },
+// Tooltips - English
+const TOOLTIPS = {
+  consensusIndex: 'Measures alignment of signals across all forecast horizons. High = strong agreement. Low = conflicting signals.',
+  conflict: 'Indicates disagreement between structural, tactical and timing layers.',
+  resolved: 'The final trading signal after resolving conflicts between layers.',
+  dominant: 'The layer currently exerting the strongest influence on the forecast.',
+  voteHorizon: 'Shows contribution of each time horizon to the overall consensus.',
+  layerInfluence: 'Shows how much each analytical layer affects the current forecast.',
+};
+
+const CONFLICT_LABELS = {
+  NONE: { label: 'Aligned', color: '#16a34a', bg: '#dcfce7' },
+  LOW: { label: 'Low', color: '#047857', bg: '#d1fae5' },
+  MODERATE: { label: 'Moderate', color: '#d97706', bg: '#fef3c7' },
+  HIGH: { label: 'High', color: '#ea580c', bg: '#fed7aa' },
+  SEVERE: { label: 'Severe', color: '#dc2626', bg: '#fecaca' },
 };
 
 const ACTION_COLORS = {
-  BUY: { bg: '#dcfce7', text: '#166534' },
-  SELL: { bg: '#fecaca', text: '#991b1b' },
-  HOLD: { bg: '#f3f4f6', text: '#374151' },
+  BUY: { bg: '#dcfce7', color: '#166534' },
+  SELL: { bg: '#fecaca', color: '#991b1b' },
+  HOLD: { bg: '#f3f4f6', color: '#374151' },
 };
 
-const MODE_LABELS = {
-  TREND_FOLLOW: 'Trend Follow',
-  COUNTER_TREND: 'Counter-Trend',
-  COUNTER_SIGNAL_BLOCKED: 'Counter Blocked',
-  WAIT: 'Wait',
-};
-
-const DIRECTION_ICONS = {
-  BULLISH: { symbol: '↑', color: '#16a34a' },
-  BEARISH: { symbol: '↓', color: '#dc2626' },
-  FLAT: { symbol: '→', color: '#6b7280' },
-};
-
-export function ConsensusPanel({ consensus74 }) {
-  const [showDetails, setShowDetails] = useState(false);
+/**
+ * Tooltip Component
+ */
+function Tip({ children, text }) {
+  const [show, setShow] = useState(false);
   
-  if (!consensus74) {
-    return null;
-  }
+  return (
+    <span 
+      style={{ position: 'relative', display: 'inline-flex', cursor: 'help' }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <span style={{
+          position: 'absolute',
+          bottom: 'calc(100% + 6px)',
+          left: '0',
+          zIndex: 1000,
+          backgroundColor: '#1f2937',
+          color: '#fff',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          fontSize: '12px',
+          lineHeight: '1.4',
+          width: '200px',
+          textAlign: 'left',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          fontWeight: '400',
+          whiteSpace: 'normal',
+        }}>
+          {text}
+          <span style={{
+            position: 'absolute',
+            bottom: '-5px',
+            left: '16px',
+            width: '0',
+            height: '0',
+            borderLeft: '5px solid transparent',
+            borderRight: '5px solid transparent',
+            borderTop: '5px solid #1f2937',
+          }} />
+        </span>
+      )}
+    </span>
+  );
+}
+
+/**
+ * Main Component
+ */
+export function ConsensusPanel({ consensus74 }) {
+  if (!consensus74) return null;
   
   const {
-    consensusIndex,
-    direction,
-    conflictLevel,
-    // BLOCK 74.3: Structural dominance fields
-    dominance,
-    structuralLock,
-    timingOverrideBlocked,
-    votes,
-    conflictReasons,
-    resolved,
-    adaptiveMeta,
+    consensusIndex = 50,
+    conflictLevel = 'MODERATE',
+    votes = [],
+    resolved = {},
+    adaptiveMeta = {},
   } = consensus74;
   
-  const conflictColor = CONFLICT_COLORS[conflictLevel] || CONFLICT_COLORS.MODERATE;
-  const actionColor = ACTION_COLORS[resolved?.action] || ACTION_COLORS.HOLD;
-  const dirIcon = DIRECTION_ICONS[direction] || DIRECTION_ICONS.FLAT;
+  const conflict = CONFLICT_LABELS[conflictLevel] || CONFLICT_LABELS.MODERATE;
+  const action = ACTION_COLORS[resolved?.action] || ACTION_COLORS.HOLD;
+  const dominant = resolved?.dominantTier || 'TACTICAL';
   
-  // Determine bias from consensus index
-  const bias = consensusIndex > 60 ? 'BULLISH' : consensusIndex < 40 ? 'BEARISH' : 'NEUTRAL';
-  const biasColor = bias === 'BULLISH' ? '#166534' : bias === 'BEARISH' ? '#dc2626' : '#6b7280';
+  // Bias label
+  const bias = consensusIndex > 60 ? 'Bullish' : consensusIndex < 40 ? 'Bearish' : 'Neutral';
+  const biasColor = consensusIndex > 60 ? '#16a34a' : consensusIndex < 40 ? '#dc2626' : '#6b7280';
+  
+  // Layer weights
+  const structWeight = (adaptiveMeta?.structureWeightSum || 0) * 100;
+  const tactWeight = (adaptiveMeta?.tacticalWeightSum || 0) * 100;
+  const timeWeight = (adaptiveMeta?.timingWeightSum || 0) * 100;
 
   return (
-    <div style={styles.container}>
-      {/* Header with Structural Lock Indicator */}
+    <div style={styles.container} data-testid="consensus-panel">
+      {/* Header */}
       <div style={styles.header}>
-        <div style={styles.headerLeft}>
-          <span style={styles.title}>INSTITUTIONAL CONSENSUS</span>
-          {/* BLOCK 74.3: Structural Dominance Badge */}
-          {structuralLock && (
-            <span style={styles.lockBadge} data-testid="structural-lock-badge">
-              🔒 STRUCTURAL LOCK
-            </span>
-          )}
-        </div>
-        <span style={styles.regimeBadge}>
-          {adaptiveMeta?.regime || 'NORMAL'}
-        </span>
+        <Tip text={TOOLTIPS.consensusIndex}>
+          <span style={styles.title}>Institutional Consensus</span>
+        </Tip>
       </div>
       
-      {/* BLOCK 74.3: Structural Dominance Alert */}
-      {structuralLock && (
-        <div style={styles.dominanceAlert} data-testid="dominance-alert">
-          <span style={styles.alertIcon}>⚡</span>
-          <span style={styles.alertText}>
-            <strong>Structure ({adaptiveMeta?.structuralDirection})</strong> controls direction
-            {timingOverrideBlocked && (
-              <span style={styles.blockedText}> • Timing override blocked</span>
-            )}
-          </span>
-        </div>
-      )}
-      
-      {/* Main Metrics Row */}
-      <div style={styles.metricsRow}>
+      {/* Top Metrics Row */}
+      <div style={styles.topRow}>
         {/* Consensus Index */}
-        <div style={styles.metricBlock}>
-          <div style={styles.metricLabel}>Consensus Index</div>
-          <div style={{
-            ...styles.metricValue,
-            color: biasColor,
-          }}>
-            {consensusIndex}
+        <Tip text={TOOLTIPS.consensusIndex}>
+          <div style={styles.metric}>
+            <span style={styles.metricLabel}>Index</span>
+            <span style={{ ...styles.indexValue, color: biasColor }}>{consensusIndex}</span>
+            <span style={{ ...styles.biasLabel, color: biasColor }}>{bias}</span>
           </div>
-          <div style={styles.metricSub}>
-            <span style={{ color: biasColor }}>{bias}</span> BIAS
-          </div>
-        </div>
+        </Tip>
         
-        {/* Conflict Level */}
-        <div style={styles.metricBlock}>
-          <div style={styles.metricLabel}>Conflict</div>
-          <div style={{
-            ...styles.conflictBadge,
-            backgroundColor: conflictColor.bg,
-            color: conflictColor.text,
-          }}>
-            {conflictColor.label}
+        {/* Conflict */}
+        <Tip text={TOOLTIPS.conflict}>
+          <div style={styles.metric}>
+            <span style={styles.metricLabel}>Conflict</span>
+            <span style={{ ...styles.badge, backgroundColor: conflict.bg, color: conflict.color }}>
+              {conflict.label}
+            </span>
           </div>
-        </div>
+        </Tip>
         
-        {/* Resolved Decision */}
-        <div style={styles.metricBlock}>
-          <div style={styles.metricLabel}>Resolved</div>
-          <div style={{
-            ...styles.actionBadge,
-            backgroundColor: actionColor.bg,
-            color: actionColor.text,
-          }}>
-            {resolved?.action || 'HOLD'}
+        {/* Resolved */}
+        <Tip text={TOOLTIPS.resolved}>
+          <div style={styles.metric}>
+            <span style={styles.metricLabel}>Signal</span>
+            <span style={{ ...styles.actionBadge, backgroundColor: action.bg, color: action.color }}>
+              {resolved?.action || 'HOLD'}
+            </span>
           </div>
-          <div style={styles.metricSub}>
-            {MODE_LABELS[resolved?.mode] || 'Wait'} · {((resolved?.sizeMultiplier || 0) * 100).toFixed(0)}%
-          </div>
-        </div>
+        </Tip>
         
-        {/* Dominant Tier */}
-        <div style={styles.metricBlock}>
-          <div style={styles.metricLabel}>Dominant</div>
-          <div style={styles.tierBadge}>
-            {resolved?.dominantTier || 'TACTICAL'}
+        {/* Dominant */}
+        <Tip text={TOOLTIPS.dominant}>
+          <div style={styles.metric}>
+            <span style={styles.metricLabel}>Dominant</span>
+            <span style={styles.dominantBadge}>{dominant}</span>
           </div>
-        </div>
+        </Tip>
       </div>
       
-      {/* Expand/Collapse Button */}
-      <button 
-        style={styles.expandButton}
-        onClick={() => setShowDetails(!showDetails)}
-        data-testid="consensus-expand-btn"
-      >
-        {showDetails ? '▼ Hide Details' : '▶ Show Details'}
-      </button>
-      
-      {/* Details Section */}
-      {showDetails && (
-        <div style={styles.detailsSection}>
-          {/* Vote Breakdown */}
-          <div style={styles.votesSection}>
-            <div style={styles.sectionTitle}>Vote Breakdown</div>
-            <div style={styles.votesGrid}>
-              {votes?.map((vote) => (
-                <div key={vote.horizon} style={styles.voteRow}>
-                  <span style={styles.voteHorizon}>{vote.horizon}</span>
-                  <span style={{
-                    ...styles.voteDirection,
-                    color: vote.direction === 'BULLISH' ? '#166534' : vote.direction === 'BEARISH' ? '#dc2626' : '#6b7280',
-                  }}>
-                    {vote.direction === 'BULLISH' ? '↑' : vote.direction === 'BEARISH' ? '↓' : '→'}
-                  </span>
-                  <div style={styles.voteBarContainer}>
+      {/* Bottom Section - Two Columns */}
+      <div style={styles.bottomRow}>
+        {/* Vote by Horizon */}
+        <div style={styles.column}>
+          <Tip text={TOOLTIPS.voteHorizon}>
+            <div style={styles.columnTitle}>Vote by Horizon</div>
+          </Tip>
+          <div style={styles.voteList}>
+            {votes.slice(0, 6).map((v) => {
+              const weight = (v.weight || 0) * 100;
+              return (
+                <div key={v.horizon} style={styles.voteItem}>
+                  <span style={styles.voteLabel}>{v.horizon}</span>
+                  <div style={styles.miniBarBg}>
                     <div style={{
-                      ...styles.voteBar,
-                      width: `${vote.weight * 100}%`,
-                      backgroundColor: vote.contribution > 0 ? '#16a34a' : vote.contribution < 0 ? '#dc2626' : '#9ca3af',
+                      ...styles.miniBar,
+                      width: `${Math.min(100, weight * 3.5)}%`,
+                      backgroundColor: v.contribution > 0 ? '#22c55e' : v.contribution < 0 ? '#ef4444' : '#8b5cf6',
                     }} />
                   </div>
-                  <span style={styles.voteWeight}>{(vote.weight * 100).toFixed(0)}%</span>
+                  <span style={styles.votePercent}>{weight.toFixed(0)}%</span>
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Conflict Reasons */}
-          {conflictReasons && conflictReasons.length > 0 && (
-            <div style={styles.reasonsSection}>
-              <div style={styles.sectionTitle}>Conflict Analysis</div>
-              <ul style={styles.reasonsList}>
-                {conflictReasons.map((reason, i) => (
-                  <li key={i} style={styles.reasonItem}>{reason}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-          {/* BLOCK 74.3: Tier Weight Breakdown */}
-          <div style={styles.tierWeightsSection}>
-            <div style={styles.sectionTitle}>Tier Weight Distribution</div>
-            <div style={styles.tierWeightsGrid}>
-              <div style={styles.tierWeightItem}>
-                <div style={styles.tierWeightLabel}>STRUCTURE</div>
-                <div style={styles.tierWeightBarContainer}>
-                  <div style={{
-                    ...styles.tierWeightBar,
-                    width: `${(adaptiveMeta?.structureWeightSum || 0) * 100}%`,
-                    backgroundColor: '#ef4444',
-                  }} />
-                </div>
-                <span style={styles.tierWeightValue}>
-                  {((adaptiveMeta?.structureWeightSum || 0) * 100).toFixed(0)}%
-                </span>
-                <span style={{
-                  ...styles.tierDirection,
-                  color: adaptiveMeta?.structuralDirection === 'BULLISH' ? '#16a34a' : 
-                         adaptiveMeta?.structuralDirection === 'BEARISH' ? '#dc2626' : '#6b7280'
-                }}>
-                  {adaptiveMeta?.structuralDirection === 'BULLISH' ? '↑' : 
-                   adaptiveMeta?.structuralDirection === 'BEARISH' ? '↓' : '→'}
-                </span>
-              </div>
-              <div style={styles.tierWeightItem}>
-                <div style={styles.tierWeightLabel}>TACTICAL</div>
-                <div style={styles.tierWeightBarContainer}>
-                  <div style={{
-                    ...styles.tierWeightBar,
-                    width: `${(adaptiveMeta?.tacticalWeightSum || 0) * 100}%`,
-                    backgroundColor: '#8b5cf6',
-                  }} />
-                </div>
-                <span style={styles.tierWeightValue}>
-                  {((adaptiveMeta?.tacticalWeightSum || 0) * 100).toFixed(0)}%
-                </span>
-                <span style={{
-                  ...styles.tierDirection,
-                  color: adaptiveMeta?.tacticalDirection === 'BULLISH' ? '#16a34a' : 
-                         adaptiveMeta?.tacticalDirection === 'BEARISH' ? '#dc2626' : '#6b7280'
-                }}>
-                  {adaptiveMeta?.tacticalDirection === 'BULLISH' ? '↑' : 
-                   adaptiveMeta?.tacticalDirection === 'BEARISH' ? '↓' : '→'}
-                </span>
-              </div>
-              <div style={styles.tierWeightItem}>
-                <div style={styles.tierWeightLabel}>TIMING</div>
-                <div style={styles.tierWeightBarContainer}>
-                  <div style={{
-                    ...styles.tierWeightBar,
-                    width: `${(adaptiveMeta?.timingWeightSum || 0) * 100}%`,
-                    backgroundColor: '#3b82f6',
-                  }} />
-                </div>
-                <span style={styles.tierWeightValue}>
-                  {((adaptiveMeta?.timingWeightSum || 0) * 100).toFixed(0)}%
-                </span>
-                <span style={{
-                  ...styles.tierDirection,
-                  color: adaptiveMeta?.timingDirection === 'BULLISH' ? '#16a34a' : 
-                         adaptiveMeta?.timingDirection === 'BEARISH' ? '#dc2626' : '#6b7280'
-                }}>
-                  {adaptiveMeta?.timingDirection === 'BULLISH' ? '↑' : 
-                   adaptiveMeta?.timingDirection === 'BEARISH' ? '↓' : '→'}
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Adaptive Meta */}
-          <div style={styles.metaSection}>
-            <div style={styles.sectionTitle}>Adaptive Weighting 2.0</div>
-            <div style={styles.metaGrid}>
-              <div style={styles.metaItem}>
-                <span style={styles.metaLabel}>Regime</span>
-                <span style={styles.metaValue}>{adaptiveMeta?.regime || 'NORMAL'}</span>
-              </div>
-              <div style={styles.metaItem}>
-                <span style={styles.metaLabel}>Dominance</span>
-                <span style={{
-                  ...styles.metaValue,
-                  color: structuralLock ? '#3730a3' : '#374151',
-                  fontWeight: structuralLock ? '700' : '600',
-                }}>{dominance || 'TACTICAL'}</span>
-              </div>
-              <div style={styles.metaItem}>
-                <span style={styles.metaLabel}>Struct Lock</span>
-                <span style={{
-                  ...styles.metaValue,
-                  color: structuralLock ? '#3730a3' : '#6b7280',
-                }}>{structuralLock ? 'ACTIVE' : 'OFF'}</span>
-              </div>
-              <div style={styles.metaItem}>
-                <span style={styles.metaLabel}>Timing Block</span>
-                <span style={{
-                  ...styles.metaValue,
-                  color: timingOverrideBlocked ? '#dc2626' : '#6b7280',
-                }}>{timingOverrideBlocked ? 'BLOCKED' : 'NO'}</span>
-              </div>
-              <div style={styles.metaItem}>
-                <span style={styles.metaLabel}>Div Penalties</span>
-                <span style={styles.metaValue}>{adaptiveMeta?.divergencePenalties || 0}</span>
-              </div>
-              <div style={styles.metaItem}>
-                <span style={styles.metaLabel}>Phase Penalties</span>
-                <span style={styles.metaValue}>{adaptiveMeta?.phasePenalties || 0}</span>
-              </div>
-              {adaptiveMeta?.stabilityGuard && (
-                <div style={{...styles.metaItem, gridColumn: 'span 2'}}>
-                  <span style={{...styles.metaLabel, color: '#dc2626'}}>⚠ Stability Guard Active</span>
-                </div>
-              )}
-            </div>
-            {/* Regime Impact */}
-            {adaptiveMeta?.weightAdjustments && (
-              <div style={styles.regimeImpact}>
-                <span style={styles.regimeImpactLabel}>Regime Impact:</span>
-                <span style={styles.regimeImpactValues}>
-                  Struct ×{adaptiveMeta.weightAdjustments.structureBoost?.toFixed(2)} | 
-                  Tact ×{adaptiveMeta.weightAdjustments.tacticalBoost?.toFixed(2)} | 
-                  Time ×{adaptiveMeta.weightAdjustments.timingClamp?.toFixed(2)}
-                </span>
-              </div>
-            )}
+              );
+            })}
           </div>
         </div>
-      )}
+        
+        {/* Layer Influence */}
+        <div style={styles.column}>
+          <Tip text={TOOLTIPS.layerInfluence}>
+            <div style={styles.columnTitle}>Layer Influence</div>
+          </Tip>
+          <div style={styles.layerList}>
+            <div style={styles.layerItem}>
+              <span style={styles.layerLabel}>Structure</span>
+              <div style={styles.miniBarBg}>
+                <div style={{ ...styles.miniBar, width: `${structWeight * 1.8}%`, backgroundColor: '#ef4444' }} />
+              </div>
+              <span style={styles.layerPercent}>{structWeight.toFixed(0)}%</span>
+            </div>
+            <div style={styles.layerItem}>
+              <span style={styles.layerLabel}>Tactical</span>
+              <div style={styles.miniBarBg}>
+                <div style={{ ...styles.miniBar, width: `${tactWeight * 1.8}%`, backgroundColor: '#8b5cf6' }} />
+              </div>
+              <span style={styles.layerPercent}>{tactWeight.toFixed(0)}%</span>
+            </div>
+            <div style={styles.layerItem}>
+              <span style={styles.layerLabel}>Timing</span>
+              <div style={styles.miniBarBg}>
+                <div style={{ ...styles.miniBar, width: `${timeWeight * 1.8}%`, backgroundColor: '#3b82f6' }} />
+              </div>
+              <span style={styles.layerPercent}>{timeWeight.toFixed(0)}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -339,276 +224,150 @@ const styles = {
     backgroundColor: '#ffffff',
     borderRadius: '12px',
     border: '1px solid #e5e7eb',
-    padding: '16px',
-    marginTop: '16px',
+    overflow: 'visible',
+    maxWidth: '700px',
   },
   header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '16px',
-  },
-  headerLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
+    padding: '14px 20px',
+    borderBottom: '1px solid #e5e7eb',
+    backgroundColor: '#f9fafb',
   },
   title: {
-    fontSize: '12px',
+    fontSize: '14px',
     fontWeight: '600',
-    color: '#6b7280',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
+    color: '#111827',
   },
-  // BLOCK 74.3: Structural Lock Badge
-  lockBadge: {
-    fontSize: '10px',
-    fontWeight: '700',
-    padding: '4px 10px',
-    borderRadius: '4px',
-    backgroundColor: '#e0e7ff',
-    color: '#3730a3',
+  
+  // Top Row
+  topRow: {
     display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-  },
-  // BLOCK 74.3: Dominance Alert
-  dominanceAlert: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 14px',
-    backgroundColor: '#eef2ff',
-    borderRadius: '8px',
-    border: '1px solid #c7d2fe',
-    marginBottom: '16px',
-  },
-  alertIcon: {
-    fontSize: '16px',
-  },
-  alertText: {
-    fontSize: '12px',
-    color: '#3730a3',
-  },
-  blockedText: {
-    color: '#dc2626',
-    fontWeight: '600',
-  },
-  regimeBadge: {
-    fontSize: '10px',
-    fontWeight: '700',
-    padding: '3px 8px',
-    borderRadius: '4px',
-    backgroundColor: '#f3f4f6',
-    color: '#374151',
-  },
-  metricsRow: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
+    justifyContent: 'space-between',
+    padding: '16px 20px',
+    borderBottom: '1px solid #f3f4f6',
     gap: '16px',
-    marginBottom: '16px',
   },
-  metricBlock: {
+  metric: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     gap: '4px',
+    flex: 1,
   },
   metricLabel: {
     fontSize: '10px',
+    fontWeight: '500',
     color: '#9ca3af',
     textTransform: 'uppercase',
   },
-  metricValue: {
+  indexValue: {
     fontSize: '28px',
     fontWeight: '700',
-    fontFamily: 'ui-monospace, monospace',
+    lineHeight: 1,
   },
-  metricSub: {
+  biasLabel: {
     fontSize: '10px',
-    color: '#6b7280',
+    fontWeight: '600',
+    textTransform: 'uppercase',
   },
-  conflictBadge: {
+  badge: {
     fontSize: '12px',
     fontWeight: '600',
-    padding: '6px 12px',
+    padding: '4px 12px',
     borderRadius: '6px',
   },
   actionBadge: {
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: '700',
-    padding: '8px 16px',
+    padding: '6px 14px',
     borderRadius: '6px',
   },
-  tierBadge: {
+  dominantBadge: {
     fontSize: '11px',
     fontWeight: '600',
     padding: '4px 10px',
     borderRadius: '4px',
     backgroundColor: '#ede9fe',
     color: '#5b21b6',
+    textTransform: 'uppercase',
   },
-  expandButton: {
-    width: '100%',
-    padding: '8px',
-    backgroundColor: '#f9fafb',
-    border: '1px solid #e5e7eb',
-    borderRadius: '6px',
-    fontSize: '11px',
-    color: '#6b7280',
-    cursor: 'pointer',
-    transition: 'background-color 0.15s',
+  
+  // Bottom Row
+  bottomRow: {
+    display: 'flex',
+    padding: '16px 20px',
+    gap: '24px',
   },
-  detailsSection: {
-    marginTop: '16px',
-    paddingTop: '16px',
-    borderTop: '1px solid #e5e7eb',
+  column: {
+    flex: 1,
   },
-  sectionTitle: {
+  columnTitle: {
     fontSize: '11px',
     fontWeight: '600',
     color: '#6b7280',
+    marginBottom: '10px',
     textTransform: 'uppercase',
-    marginBottom: '8px',
   },
-  votesSection: {
-    marginBottom: '16px',
-  },
-  votesGrid: {
+  
+  // Vote List
+  voteList: {
     display: 'flex',
     flexDirection: 'column',
     gap: '6px',
   },
-  voteRow: {
-    display: 'grid',
-    gridTemplateColumns: '50px 24px 1fr 40px',
-    gap: '8px',
+  voteItem: {
+    display: 'flex',
     alignItems: 'center',
+    gap: '8px',
   },
-  voteHorizon: {
+  voteLabel: {
     fontSize: '11px',
     fontWeight: '600',
     color: '#374151',
+    minWidth: '32px',
   },
-  voteDirection: {
-    fontSize: '14px',
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  voteBarContainer: {
-    height: '8px',
+  miniBarBg: {
+    flex: 1,
+    height: '6px',
     backgroundColor: '#f3f4f6',
-    borderRadius: '4px',
+    borderRadius: '3px',
     overflow: 'hidden',
   },
-  voteBar: {
+  miniBar: {
     height: '100%',
-    borderRadius: '4px',
-    transition: 'width 0.3s',
+    borderRadius: '3px',
+    transition: 'width 0.2s',
   },
-  voteWeight: {
+  votePercent: {
     fontSize: '10px',
     fontWeight: '600',
     color: '#6b7280',
+    minWidth: '28px',
     textAlign: 'right',
-    fontFamily: 'ui-monospace, monospace',
   },
-  reasonsSection: {
-    marginBottom: '16px',
-  },
-  reasonsList: {
-    margin: 0,
-    paddingLeft: '16px',
-  },
-  reasonItem: {
-    fontSize: '11px',
-    color: '#6b7280',
-    marginBottom: '4px',
-  },
-  // BLOCK 74.3: Tier Weight Distribution
-  tierWeightsSection: {
-    marginBottom: '16px',
-  },
-  tierWeightsGrid: {
+  
+  // Layer List
+  layerList: {
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
   },
-  tierWeightItem: {
-    display: 'grid',
-    gridTemplateColumns: '70px 1fr 40px 24px',
-    gap: '8px',
+  layerItem: {
+    display: 'flex',
     alignItems: 'center',
+    gap: '8px',
   },
-  tierWeightLabel: {
-    fontSize: '10px',
-    fontWeight: '600',
-    color: '#6b7280',
-  },
-  tierWeightBarContainer: {
-    height: '10px',
-    backgroundColor: '#f3f4f6',
-    borderRadius: '5px',
-    overflow: 'hidden',
-  },
-  tierWeightBar: {
-    height: '100%',
-    borderRadius: '5px',
-    transition: 'width 0.3s',
-  },
-  tierWeightValue: {
+  layerLabel: {
     fontSize: '11px',
     fontWeight: '600',
     color: '#374151',
-    textAlign: 'right',
-    fontFamily: 'ui-monospace, monospace',
+    minWidth: '60px',
   },
-  tierDirection: {
-    fontSize: '16px',
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  metaSection: {},
-  metaGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '8px',
-  },
-  metaItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '6px 10px',
-    backgroundColor: '#f9fafb',
-    borderRadius: '4px',
-  },
-  metaLabel: {
-    fontSize: '10px',
-    color: '#6b7280',
-  },
-  metaValue: {
-    fontSize: '10px',
+  layerPercent: {
+    fontSize: '11px',
     fontWeight: '600',
     color: '#374151',
-  },
-  // BLOCK 74.3: Regime Impact
-  regimeImpact: {
-    marginTop: '12px',
-    padding: '8px 12px',
-    backgroundColor: '#fef3c7',
-    borderRadius: '6px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  regimeImpactLabel: {
-    fontSize: '10px',
-    fontWeight: '600',
-    color: '#92400e',
-  },
-  regimeImpactValues: {
-    fontSize: '10px',
-    color: '#78350f',
-    fontFamily: 'ui-monospace, monospace',
+    minWidth: '32px',
+    textAlign: 'right',
   },
 };
 
