@@ -23,3 +23,6 @@ export { ConsensusPanel } from "./ConsensusPanel";
 
 // MARKET PHASE ENGINE — Объединённый блок фаз и горизонтов
 export { MarketPhaseEngine } from "./MarketPhaseEngine";
+
+// FRACTAL ANALYSIS — Unified projection/reliability/matches panel
+export { FractalAnalysisPanel } from "./FractalAnalysisPanel";
