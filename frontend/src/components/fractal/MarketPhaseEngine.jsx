@@ -187,27 +187,76 @@ function WeightColumn({ horizonStack }) {
         {sorted.map((item) => {
           const weight = (item.voteWeight || 0) * 100;
           const barColor = weight > 30 ? '#ef4444' : weight > 15 ? '#8b5cf6' : '#3b82f6';
-          const tip = `${item.horizon?.toUpperCase()} horizon contributes ${weight.toFixed(0)}% to forecast. ${weight > 30 ? 'Dominant.' : weight > 15 ? 'Significant.' : 'Minor influence.'}`;
           
           return (
-            <Tip key={item.horizon} text={tip}>
-              <div style={styles.weightRow}>
-                <span style={styles.horizonLabel}>{item.horizon?.toUpperCase()}</span>
-                <div style={styles.barContainer}>
-                  <div style={styles.barBg}>
-                    <div style={{
-                      ...styles.bar,
-                      width: `${Math.min(100, weight * 2.5)}%`,
-                      backgroundColor: barColor,
-                    }} />
-                  </div>
-                </div>
-                <span style={styles.weightPercent}>{weight.toFixed(0)}%</span>
-              </div>
-            </Tip>
+            <WeightRow 
+              key={item.horizon}
+              horizon={item.horizon}
+              weight={weight}
+              barColor={barColor}
+            />
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Weight Row with tooltip
+ */
+function WeightRow({ horizon, weight, barColor }) {
+  const [show, setShow] = useState(false);
+  const tip = `${horizon?.toUpperCase()} horizon contributes ${weight.toFixed(0)}% to forecast. ${weight > 30 ? 'Dominant.' : weight > 15 ? 'Significant.' : 'Minor influence.'}`;
+  
+  return (
+    <div 
+      style={{ ...styles.weightRow, position: 'relative' }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <span style={styles.horizonLabel}>{horizon?.toUpperCase()}</span>
+      <div style={styles.barContainer}>
+        <div style={styles.barBg}>
+          <div style={{
+            ...styles.bar,
+            width: `${Math.min(100, weight * 2.5)}%`,
+            backgroundColor: barColor,
+          }} />
+        </div>
+      </div>
+      <span style={styles.weightPercent}>{weight.toFixed(0)}%</span>
+      {show && (
+        <span style={{
+          position: 'absolute',
+          bottom: 'calc(100% + 6px)',
+          left: '0',
+          zIndex: 1000,
+          backgroundColor: '#1f2937',
+          color: '#fff',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          fontSize: '12px',
+          lineHeight: '1.4',
+          width: '220px',
+          textAlign: 'left',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          fontWeight: '400',
+          whiteSpace: 'normal',
+        }}>
+          {tip}
+          <span style={{
+            position: 'absolute',
+            bottom: '-5px',
+            left: '16px',
+            width: '0',
+            height: '0',
+            borderLeft: '5px solid transparent',
+            borderRight: '5px solid transparent',
+            borderTop: '5px solid #1f2937',
+          }} />
+        </span>
+      )}
     </div>
   );
 }
