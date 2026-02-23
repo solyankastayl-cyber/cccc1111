@@ -453,6 +453,13 @@ class FractalAPITester:
         else:
             print("❌ Terminal API failed")
         
+        # Phase Performance API
+        if phase_performance_result["success"]:
+            phases_count = phase_performance_result.get("phases_count", 0)
+            print(f"✅ Phase Performance API working with {phases_count} phases")
+        else:
+            print("❌ Phase Performance API failed")
+        
         # Percentile naming
         if percentile_issues:
             print(f"❌ Percentile naming issues: {len(percentile_issues)}")
