@@ -20,3 +20,6 @@ export { SizingBreakdown } from "./SizingBreakdown";
 // BLOCK 74 — Multi-Horizon Intelligence Stack
 export { HorizonStackView } from "./HorizonStackView";
 export { ConsensusPanel } from "./ConsensusPanel";
+
+// MARKET PHASE ENGINE — Объединённый блок фаз и горизонтов
+export { MarketPhaseEngine } from "./MarketPhaseEngine";
