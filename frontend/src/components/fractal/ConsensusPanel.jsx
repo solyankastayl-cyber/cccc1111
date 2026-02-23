@@ -254,7 +254,7 @@ const styles = {
     borderRadius: '12px',
     border: '1px solid #e5e7eb',
     overflow: 'visible',
-    maxWidth: '700px',
+    maxWidth: '900px',
   },
   header: {
     padding: '14px 20px',
@@ -320,14 +320,15 @@ const styles = {
     textTransform: 'uppercase',
   },
   
-  // Bottom Row
+  // Bottom Row - Three columns
   bottomRow: {
     display: 'flex',
     padding: '16px 20px',
-    gap: '24px',
+    gap: '20px',
   },
   column: {
     flex: 1,
+    minWidth: 0,
   },
   columnTitle: {
     fontSize: '11px',
@@ -346,13 +347,13 @@ const styles = {
   voteItem: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '6px',
   },
   voteLabel: {
     fontSize: '11px',
     fontWeight: '600',
     color: '#374151',
-    minWidth: '32px',
+    minWidth: '28px',
   },
   miniBarBg: {
     flex: 1,
@@ -370,7 +371,7 @@ const styles = {
     fontSize: '10px',
     fontWeight: '600',
     color: '#6b7280',
-    minWidth: '28px',
+    minWidth: '24px',
     textAlign: 'right',
   },
   
@@ -383,19 +384,44 @@ const styles = {
   layerItem: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '6px',
   },
   layerLabel: {
     fontSize: '11px',
     fontWeight: '600',
     color: '#374151',
-    minWidth: '60px',
+    minWidth: '55px',
   },
   layerPercent: {
     fontSize: '11px',
     fontWeight: '600',
     color: '#374151',
+    minWidth: '28px',
+    textAlign: 'right',
+  },
+  
+  // Forecast List (NEW)
+  forecastList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  forecastItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+  },
+  forecastLabel: {
+    fontSize: '11px',
+    fontWeight: '600',
+    color: '#374151',
     minWidth: '32px',
+  },
+  forecastPercent: {
+    fontSize: '10px',
+    fontWeight: '600',
+    color: '#6b7280',
+    minWidth: '24px',
     textAlign: 'right',
   },
 };
