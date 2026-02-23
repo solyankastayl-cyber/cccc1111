@@ -93,6 +93,15 @@ export function buildApp(): FastifyInstance {
       timestamp: new Date().toISOString()
     }));
     
+    // System health endpoint for SystemStatusBanner
+    app.get('/api/system/health', async () => ({
+      status: 'healthy',
+      ts: new Date().toISOString(),
+      services: {},
+      metrics: { bootstrap: {} },
+      notes: [],
+    }));
+    
     // Register ONLY Fractal module
     app.register(async (fastify) => {
       console.log('[BOOT] Registering Fractal Module (isolated)...');
