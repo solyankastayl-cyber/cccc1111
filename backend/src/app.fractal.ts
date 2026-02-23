@@ -61,6 +61,15 @@ async function main() {
     timestamp: new Date().toISOString()
   }));
   
+  // System health endpoint for SystemStatusBanner
+  app.get('/api/system/health', async () => ({
+    status: 'healthy',
+    ts: new Date().toISOString(),
+    services: {},
+    metrics: { bootstrap: {} },
+    notes: [],
+  }));
+  
   // Register ONLY Fractal module
   console.log('[Fractal] Registering Fractal Module...');
   await registerFractalModule(app);
