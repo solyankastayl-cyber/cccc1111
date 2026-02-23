@@ -1,0 +1,146 @@
+<analysis>**original_problem_statement:**
+Клонируй репозиторий, подними фронт, подними бэк, подними админку и в ту админку, которая у нас на момент реализована, и в последующем мы будем сейчас дорабатывать ту логику, на которой мы остановились, не доработали. Это именно часть логики обновления по фран-- по фронте. И важно: мы работаем только с областью Fractal и рабо-- все остальные модули, которые там есть, ты игнорируешь и работаешь только с частью по Fractal. Нам все остальное не нужна-- не нужно. Ты можешь посмотреть на ГитХабе последние обновления, которые были, они как раз касались именно этой области. И это нам и как раз и нужно.
+
+https://github.com/solyankastayl-cyber/ooooo
+
+**PRODUCT REQUIREMENTS:**
+The user wants to continue development on an existing project, focusing exclusively on the 'Fractal' module. The main goal is to refactor and clean up the UI by combining and reorganizing several components into more logical, compact, and user-friendly panels. The specific refactoring tasks provided by the user include:
+1.  Combining the Phase Performance Heatmap and Horizon Stack into a single Market Phase Engine panel.
+2.  Refactoring the Institutional Consensus display into a compact panel.
+3.  Unifying Expected Outcome, Distribution Stats, and Top Matches into a single Fractal Analysis panel.
+4.  Finally, reorganizing the layout so that Market Phase Engine only shows historical data, while all forecast-related weights (Vote by Horizon, Layer Influence, Forecast Influence) are consolidated within the Institutional Consensus panel.
+All UI elements must be styled professionally, use the 'Gilroy' font, have English tooltips for clarity, and follow precise layout instructions provided by the user.
+
+**User's preferred language**:
+Russian. The user primarily communicates in Russian. The next agent MUST respond in Russian.
+
+**what currently exists?**
+The project from the provided GitHub repository has been successfully cloned and set up. The TypeScript backend and React frontend are running locally, managed by . A significant amount of UI refactoring has been completed based on the user's detailed instructions. A bug causing a 404 error on the  endpoint has been fixed. The application is functional in the local environment.
+
+**Last working item**:
+-   **Last item agent was working:** The agent received instructions for a final UI layout change: moving the Current Forecast Influence section from the  component to the  component. This will result in the  only showing historical data, and the  panel having a three-column layout for all weighting factors.
+-   **Status:** NOT STARTED
+-   **Agent Testing Done:** N
+-   **Which testing method agent to use?** Frontend testing agent. First, take a screenshot to visually verify the new layout of both  and  components. Then, run the testing agent to ensure no regressions were introduced.
+-   **User Testing Done:** N
+
+**All Pending/In progress Issue list**:
+There are no pending bugs. The only pending item is the task listed below.
+
+**In progress Task List**:
+-   **Task 1:** Refactor Market Phase Engine and Institutional Consensus Panels (Priority: P0)
+    -   **Where to resume:**
+        1.  Edit  to remove the Current Forecast Weighting section, leaving only the Historical Phase Performance table.
+        2.  Edit  to add a third column, Forecast Influence, next to the existing Vote by Horizon and Layer Influence columns.
+        3.  The data for Forecast Influence should be sourced from the  property of the API payload, which was previously used in .
+        4.  Ensure the new column is styled consistently with the other two (mini-bars, percentages).
+        5.  Add the required English tooltip for the Forecast Influence section, as specified by the user: Model weighting applied to each horizon in projection calculations.
+    -   **What will be achieved with this?** The UI will be more logically organized. The  will be dedicated to historical data, while the  panel will consolidate all data points related to how the current forecast is constructed.
+    -   **Status:** NOT STARTED
+    -   **Should Test frontend/backend/both after fix?** Frontend
+    -   **Blocked on something:** No
+
+**Upcoming and Future Tasks**
+-   After completing the current UI refactoring task, the agent should ask the user for confirmation if this completes all the required work or if there are other pending logic implementations related to the Fractal module.
+
+**Completed work in this session**
+-   **Project Setup:** Successfully cloned the repository, installed all backend (pip) and frontend (yarn) dependencies, and configured both services to run under .
+-   **Backend Bug Fix:** Resolved a 404 error for the  endpoint by adding the route definition to , which is the entry point in the project's  mode.
+-   **UI Refactoring - Market Phase Engine:**
+    -   Created  by merging  and .
+    -   Refined its layout to a compact, two-column horizontal design.
+    -   Standardized fonts and styling to match the application's aesthetic.
+    -   Added descriptive tooltips in English for all metrics as requested.
+-   **UI Refactoring - Institutional Consensus:**
+    -   Created a new, compact .
+    -   Consolidated key metrics into a single header row and arranged detailed weights into a two-column layout.
+    -   Removed redundant display cards from .
+-   **UI Refactoring - Fractal Analysis:**
+    -   Created  by combining , , and .
+    -   Styled the panel to be compact (approx. 1.5 columns wide) with a scrollable list for Top Matches, adhering to a specific user correction.
+
+**Earlier issues found/mentioned but not fixed**
+-   **Issue 1:** Preview Environment Instability.
+    -   **Debug checklist:** This is a platform-level issue, not a code issue. The preview environment () is slow to wake up after periods of inactivity, leading to initial 404 errors or long loading times.
+    -   **Why to solve this issue and what will be achieved with this?** This cannot be solved by the agent. Acknowledging this issue to the user and relying on local testing () and being patient with screenshots is the best approach. This context is critical to managing user frustration.
+    -   **Should Test frontend/backend/both after fix:** N/A
+    -   **Is recurring issue?** Y
+
+**Known issue recurrence from previous fork**
+-   N/A
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Tech Stack:** React (with CRACO for configuration), TailwindCSS, TypeScript/Express.js backend.
+-   **Application Type:** Financial data visualization and analysis dashboard.
+-   **Core Module:** The entire focus is on the Fractal module.
+-   **Environment:** The backend is configured to run in a  mode, loading a specific set of routes.
+
+**key DB schema**
+-   Not explored during this session.
+
+**changes in tech stack**
+-   None.
+
+**All files of reference**
+-   : Modified to fix a 404 error by adding a health check route.
+-   : Edited to replace old components with the new, refactored ones.
+-   : Created and heavily refactored. Needs one final modification.
+-   : Created and refactored. Needs one final modification.
+-   : Created and refactored.
+-   : Edited to export the new components.
+-   : Viewed to identify the 'Gilroy' font family.
+
+**Areas that need refactoring**:
+-   The old, now-unused components could be deleted to clean up the codebase. These include , , the old , , , and .
+
+**key api endpoints**
+-   : A system health check endpoint that was returning 404, now fixed.
+-   : Fetches main data for the panels.
+-   : Provides data for the graph overlay.
+-   : Provides data for the equity curve.
+
+**Critical Info for New Agent**
+-   **User Persona:** The user is technically proficient, has a very clear vision for the UI/UX, and is extremely sensitive to wasted time/credits. They provide precise, detailed instructions and expect them to be followed exactly.
+-   **Language:** You MUST communicate in Russian.
+-   **Preview Environment:** The preview URL is unreliable and slow to wake up. Do not get stuck waiting for it. Use  to test the backend locally. For frontend changes, take a screenshot; if it fails, wait a minute and retry, but do not enter a loop. Acknowledge the user's frustration with the platform's speed.
+-   **Development Focus:** Work ONLY on the Fractal module. The backend runs in a special  mode.
+-   **Hot Reload:** The TypeScript backend's hot reload () was unreliable. If backend changes don't apply, use backend: stopped
+backend: started to force a restart.
+
+**documents and test reports created in this job**
+-   
+-   
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User:** Requests a final UI refactor: move Current Forecast Influence from  to , creating a 3-column layout in the consensus panel. (PENDING)
+2.  **User:** Corrected the agent's implementation of , instructing it to be compact and not full-width. (Completed)
+3.  **User:** Provided detailed instructions to merge three panels into a single . (Completed)
+4.  **User:** Provided detailed instructions to refactor the  panel. (Completed)
+5.  **User:** Complained that tooltips were in Russian and misplaced; requested them in English and positioned correctly. (Completed)
+6.  **User:** Requested the addition of explanatory tooltips to the . (Completed)
+7.  **User:** Complained about the layout and fonts of , asking for a wider layout and correct fonts. (Completed)
+8.  **User:** Provided instructions to change  to a compact, two-column horizontal layout. (Completed)
+9.  **User:** Provided initial instructions to combine two components into the . (Completed)
+10. **User:** Expressed extreme frustration about the preview environment wasting credits. (Context)
+
+**Project Health Check:**
+-   **Broken:** The preview environment's wake-up mechanism is slow and unreliable, causing significant friction and user frustration. This is a platform issue.
+-   **Mocked:** None. The application uses live data from the local backend.
+
+**3rd Party Integrations**
+-   None.
+
+**Testing status**
+-   **Testing agent used after significant changes:** YES
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:** None
+-   **Known regressions:** None
+
+**Credentials to test flow:**
+-   No credentials are required.
+
+**What agent forgot to execute**
+-   The agent did not start the implementation of the user's final request to refactor the  and  panels by moving the Forecast Influence section between them.</analysis>

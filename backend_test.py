@@ -14,7 +14,7 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 
 class FractalAPITester:
-    def __init__(self, base_url="https://fractal-module-dev.preview.emergentagent.com"):
+    def __init__(self, base_url="https://forecast-weights.preview.emergentagent.com"):
         self.base_url = base_url.rstrip('/')
         self.tests_run = 0
         self.tests_passed = 0
