@@ -1,7 +1,5 @@
 /**
- * MARKET PHASE ENGINE — Full-width with Tooltips
- * 
- * При наведении показывает пояснения что значит каждый элемент
+ * MARKET PHASE ENGINE — Full-width with Tooltips (English)
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
@@ -18,21 +16,21 @@ const PHASE_COLORS = {
   CAPITULATION: '#ef4444',
 };
 
-// Phase descriptions for tooltips
+// Phase descriptions - ENGLISH
 const PHASE_TOOLTIPS = {
-  ACCUMULATION: 'Фаза накопления — крупные игроки накапливают позиции. Обычно после длительного падения.',
-  MARKUP: 'Фаза роста — активный восходящий тренд. Цена растёт на высоких объёмах.',
-  DISTRIBUTION: 'Фаза распределения — крупные игроки фиксируют прибыль на вершине рынка.',
-  MARKDOWN: 'Фаза снижения — активный нисходящий тренд. Паника на рынке.',
-  RECOVERY: 'Фаза восстановления — первые признаки разворота после падения.',
-  CAPITULATION: 'Капитуляция — массовая паника, часто дно цикла.',
+  ACCUMULATION: 'Accumulation phase — smart money builds positions. Usually after prolonged decline.',
+  MARKUP: 'Markup phase — active uptrend. Price rises on high volume, market is bullish.',
+  DISTRIBUTION: 'Distribution phase — smart money takes profits at market top before reversal.',
+  MARKDOWN: 'Markdown phase — active downtrend. Price falls, market panic.',
+  RECOVERY: 'Recovery phase — market starts recovering after decline. Early reversal signs.',
+  CAPITULATION: 'Capitulation — mass panic and selling. Often marks the cycle bottom.',
 };
 
-// Column header tooltips
+// Column header tooltips - ENGLISH
 const HEADER_TOOLTIPS = {
-  successRate: 'Success Rate — процент случаев когда цена росла в данной фазе. Выше 50% = фаза чаще приносила прибыль.',
-  avgReturn: 'Average Return — средняя доходность за период в данной фазе.',
-  riskLevel: 'Risk Level — уровень риска на основе волатильности.',
+  successRate: 'Percentage of times price increased during this phase historically. Above 50% = profitable more often.',
+  avgReturn: 'Average return during this phase period. Positive = price growth.',
+  riskLevel: 'Risk level based on volatility and historical drawdowns.',
 };
 
 // Risk level
@@ -42,21 +40,22 @@ const getRisk = (avgRet, hitRate) => {
   return { label: 'High', color: '#dc2626', bg: '#fee2e2' };
 };
 
+// Risk tooltips - ENGLISH
 const RISK_TOOLTIPS = {
-  Low: 'Низкий риск — стабильная фаза, высокая вероятность прибыли.',
-  Medium: 'Средний риск — умеренная неопределённость.',
-  High: 'Высокий риск — высокая волатильность, возможны убытки.',
+  Low: 'Low risk — stable phase, high probability of positive outcome.',
+  Medium: 'Medium risk — moderate uncertainty, results may vary.',
+  High: 'High risk — high volatility and uncertainty, significant losses possible.',
 };
 
 /**
- * Tooltip Component - inline version
+ * Tooltip Component - positioned near element
  */
 function Tip({ children, text }) {
   const [show, setShow] = useState(false);
   
   return (
     <span 
-      style={{ position: 'relative', cursor: 'help' }}
+      style={{ position: 'relative', display: 'inline-flex', cursor: 'help' }}
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
     >
@@ -64,19 +63,16 @@ function Tip({ children, text }) {
       {show && (
         <span style={{
           position: 'absolute',
-          bottom: '100%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          marginBottom: '8px',
+          bottom: 'calc(100% + 6px)',
+          left: '0',
           zIndex: 1000,
           backgroundColor: '#1f2937',
           color: '#fff',
-          padding: '10px 14px',
-          borderRadius: '8px',
-          fontSize: '13px',
-          lineHeight: '1.5',
-          maxWidth: '260px',
-          minWidth: '180px',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          fontSize: '12px',
+          lineHeight: '1.4',
+          width: '220px',
           textAlign: 'left',
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           fontWeight: '400',
@@ -85,14 +81,13 @@ function Tip({ children, text }) {
           {text}
           <span style={{
             position: 'absolute',
-            bottom: '-6px',
-            left: '50%',
-            transform: 'translateX(-50%)',
+            bottom: '-5px',
+            left: '16px',
             width: '0',
             height: '0',
-            borderLeft: '6px solid transparent',
-            borderRight: '6px solid transparent',
-            borderTop: '6px solid #1f2937',
+            borderLeft: '5px solid transparent',
+            borderRight: '5px solid transparent',
+            borderTop: '5px solid #1f2937',
           }} />
         </span>
       )}
@@ -138,7 +133,7 @@ function PhaseColumn({ phases, loading, error }) {
                 </Tip>
               </span>
               <span style={styles.phColCenter}>
-                <Tip text={`В фазе ${p.phaseName} цена росла в ${(p.hitRate * 100).toFixed(0)}% случаев`}>
+                <Tip text={`Price increased ${(p.hitRate * 100).toFixed(0)}% of the time in ${p.phaseName} phase.`}>
                   <span style={{
                     ...styles.statValue,
                     color: p.hitRate > 0.5 ? '#16a34a' : '#dc2626',
@@ -148,7 +143,7 @@ function PhaseColumn({ phases, loading, error }) {
                 </Tip>
               </span>
               <span style={styles.phColCenter}>
-                <Tip text={`Средняя доходность: ${p.avgRet >= 0 ? '+' : ''}${(p.avgRet * 100).toFixed(1)}%`}>
+                <Tip text={`Average return: ${p.avgRet >= 0 ? '+' : ''}${(p.avgRet * 100).toFixed(1)}% per period.`}>
                   <span style={{
                     ...styles.statValue,
                     color: p.avgRet >= 0 ? '#16a34a' : '#dc2626',
@@ -185,14 +180,14 @@ function WeightColumn({ horizonStack }) {
 
   return (
     <div style={styles.weightColumn}>
-      <Tip text="Показывает какие горизонты влияют на прогноз. Адаптивная система подбирает оптимальные веса.">
+      <Tip text="Shows which time horizons influence the current forecast and their weights.">
         <div style={styles.columnHeader}>Current Forecast Influence</div>
       </Tip>
       <div style={styles.weightTable}>
         {sorted.map((item) => {
           const weight = (item.voteWeight || 0) * 100;
           const barColor = weight > 30 ? '#ef4444' : weight > 15 ? '#8b5cf6' : '#3b82f6';
-          const tip = `Горизонт ${item.horizon?.toUpperCase()} влияет на прогноз с весом ${weight.toFixed(0)}%. ${weight > 30 ? 'Доминирующий.' : weight > 15 ? 'Значительное влияние.' : 'Минимальное влияние.'}`;
+          const tip = `${item.horizon?.toUpperCase()} horizon contributes ${weight.toFixed(0)}% to forecast. ${weight > 30 ? 'Dominant.' : weight > 15 ? 'Significant.' : 'Minor influence.'}`;
           
           return (
             <Tip key={item.horizon} text={tip}>
@@ -248,11 +243,11 @@ export function MarketPhaseEngine({ tier = 'TACTICAL', horizonStack }) {
 
   return (
     <div style={styles.container} data-testid="market-phase-engine">
-      <Tip text="Market Phase Engine анализирует рыночные фазы и показывает как исторически вели себя цены в похожих условиях.">
-        <div style={styles.header}>
+      <div style={styles.header}>
+        <Tip text="Analyzes current market phase and shows historical price behavior in similar conditions.">
           <span style={styles.title}>Market Phase Engine</span>
-        </div>
-      </Tip>
+        </Tip>
+      </div>
       <div style={styles.content}>
         <PhaseColumn phases={phases} loading={loading} error={error} />
         <div style={styles.divider} />
@@ -274,12 +269,12 @@ const styles = {
     padding: '16px 24px',
     borderBottom: '1px solid #e5e7eb',
     backgroundColor: '#f9fafb',
-    cursor: 'help',
   },
   title: {
     fontSize: '16px',
     fontWeight: '600',
     color: '#111827',
+    cursor: 'help',
   },
   content: {
     display: 'flex',
