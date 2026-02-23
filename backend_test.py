@@ -475,6 +475,7 @@ class FractalAPITester:
             "focus_pack_results": focus_pack_results,
             "overlay_results": overlay_results,
             "terminal_result": terminal_result,
+            "phase_performance_result": phase_performance_result,
             "percentile_issues": percentile_issues,
             "duration": duration
         }
