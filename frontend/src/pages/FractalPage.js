@@ -454,23 +454,15 @@ const FractalTerminal = () => {
           </div>
         )}
 
-        {/* BLOCK 73.6: Phase Performance Heatmap */}
+        {/* MARKET PHASE ENGINE - Объединённый блок */}
         {!isLoading && (
           <div className="mb-6">
-            <PhaseHeatmap 
+            <MarketPhaseEngine 
               tier={meta?.tier || 'TACTICAL'} 
-              onPhaseFilter={setPhaseId}
+              horizonStack={horizonStack}
+              currentFocus={focus}
             />
           </div>
-        )}
-
-        {/* BLOCK 74.1: Horizon Stack View */}
-        {horizonStack && horizonStack.length > 0 && (
-          <HorizonStackView 
-            horizonStack={horizonStack} 
-            currentFocus={focus}
-            onFocusChange={setFocus}
-          />
         )}
 
         {/* BLOCK 74.2: Institutional Consensus Panel */}
