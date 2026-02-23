@@ -441,17 +441,15 @@ const FractalTerminal = () => {
           </div>
         )}
 
-        {/* BLOCK 70.2: Focus-specific panels */}
+        {/* BLOCK 70.2: Fractal Analysis - Unified Panel */}
         {!isLoading && focusData && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {/* Forecast Summary */}
-            <ForecastSummary forecast={forecast} meta={meta} />
-            
-            {/* Distribution Stats */}
-            <DistributionStats overlay={overlay} />
-            
-            {/* Matches List */}
-            <MatchesList matches={overlay?.matches} focus={focus} />
+          <div className="mb-6">
+            <FractalAnalysisPanel 
+              forecast={forecast}
+              overlay={overlay}
+              matches={overlay?.matches}
+              focus={focus}
+            />
           </div>
         )}
 
